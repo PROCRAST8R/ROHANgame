@@ -1,124 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Rohan & Totini Game</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    #game-container {
-      position: relative;
-    }
-    canvas {
-      display: block;
-      background: #87CEEB;
-    }
-    #startBtn {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 40px;
-      padding: 20px 40px;
-      background: #3CB371;
-      color: white;
-      border: none;
-      border-radius: 15px;
-      cursor: pointer;
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Rohan Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  body {
+    margin: 0;
+    background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  canvas {
+    width: 100vw;
+    height: 100vh;
+    max-width: 1080px;
+    max-height: 1920px;
+    touch-action: none;
+  }
+
+  #restartBtn {
+    position: absolute;
+    display: none;
+    padding: 20px 40px;
+    font-size: 24px;
+    background: red;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+</style>
 </head>
+
 <body>
 
-<div id="game-container">
-  <canvas id="game" width="1080" height="1920"></canvas>
-  <button id="startBtn">Start Again</button>
-</div>
+<canvas id="game" width="1080" height="1920"></canvas>
+<button id="restartBtn">START AGAIN</button>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+const restartBtn = document.getElementById("restartBtn");
 
-const startBtn = document.getElementById("startBtn");
+let gameOver = false;
 
-/* ============== IMAGES ============== */
-const boy = new Image();
-boy.src = "https://i.postimg.cc/21s9yPVZ/image.png";
+// Images
+const bg = new Image();
+bg.src = "https://postimg.cc/nC2gWTV0";
 
-const girl = new Image();
-girl.src = "https://i.postimg.cc/PCgVJBPP/image.png";
+const obstacleImg = new Image();
+obstacleImg.src = "https://postimg.cc/mPrJWMh3";
 
-/* ============== GAME VARIABLES ============== */
-let player, obstacle, score, gameOver, win;
+// Player
+const player = {
+  x: 150,
+  y: 1400,
+  w: 120,
+  h: 160,
+  vy: 0,
+  gravity: 2,
+  jump: -28,
+  onGround: true
+};
 
-/* ============== INIT FUNCTION ============== */
-function init() {
-  player = { x: 200, y: 1700, w: 120, h: 180, vy: 0, jump: -25, onGround: true };
-  obstacle = { x: 1080, y: 1680, w: 100, h: 100, speed: 12 };
-  score = 0;
+// Obstacle
+let obstacle = {
+  x: 1080,
+  y: 1450,
+  w: 120,
+  h: 180,
+  speed: 10
+};
+
+function resetGame() {
   gameOver = false;
-  win = false;
-  startBtn.style.display = "none";
-  requestAnimationFrame(update);
+  player.y = 1400;
+  player.vy = 0;
+  obstacle.x = 1080;
+  restartBtn.style.display = "none";
+  loop();
 }
 
-/* ============== CONTROLS ============== */
 function jump() {
-  if (player.onGround && !gameOver && !win) {
+  if (player.onGround && !gameOver) {
     player.vy = player.jump;
     player.onGround = false;
   }
 }
-document.addEventListener("keydown", e => { if(e.code==="Space") jump(); });
+
+// Controls (PC + Mobile)
+document.addEventListener("keydown", jump);
 document.addEventListener("click", jump);
 document.addEventListener("touchstart", jump);
 
-/* ============== UPDATE LOOP ============== */
-function update() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+// Game Loop
+function loop() {
+  if (gameOver) return;
 
-  /* Background */
-  ctx.fillStyle = "#87CEEB";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0,0,1080,1920);
 
-  /* Ground */
-  ctx.fillStyle = "#3CB371";
-  ctx.fillRect(0, 1800, canvas.width, canvas.height - 1800);
+  // Background
+  ctx.drawImage(bg, 0, 0, 1080, 1920);
 
-  /* Player physics */
-  player.vy += 1.2; // gravity
+  // Player physics
+  player.vy += player.gravity;
   player.y += player.vy;
 
-  if (player.y >= 1800 - player.h) {
-    player.y = 1800 - player.h;
+  if (player.y >= 1400) {
+    player.y = 1400;
     player.vy = 0;
     player.onGround = true;
   }
 
-  /* Draw player */
-  ctx.drawImage(boy, player.x, player.y, player.w, player.h);
+  // Draw player (simple rectangle)
+  ctx.fillStyle = "blue";
+  ctx.fillRect(player.x, player.y, player.w, player.h);
 
-  /* Obstacle move */
-  if (!win) {
-    obstacle.x -= obstacle.speed;
-    if (obstacle.x < -obstacle.w) {
-      obstacle.x = canvas.width + 200;
-      score++;
-    }
+  // Obstacle move
+  obstacle.x -= obstacle.speed;
+  if (obstacle.x + obstacle.w < 0) {
+    obstacle.x = 1080;
   }
 
-  /* Draw obstacle */
-  ctx.fillStyle = "#8B4513";
-  ctx.fillRect(obstacle.x, obstacle.y, obstacle.w, obstacle.h);
+  ctx.drawImage(obstacleImg, obstacle.x, obstacle.y, obstacle.w, obstacle.h);
 
-  /* Collision detection */
+  // Collision
   if (
     player.x < obstacle.x + obstacle.w &&
     player.x + player.w > obstacle.x &&
@@ -126,44 +138,17 @@ function update() {
     player.y + player.h > obstacle.y
   ) {
     gameOver = true;
+    restartBtn.style.display = "block";
   }
 
-  /* Game Over */
-  if (gameOver) {
-    ctx.fillStyle = "black";
-    ctx.font = "80px Arial";
-    ctx.fillText("GAME OVER 😅", 200, 800);
-    ctx.font = "50px Arial";
-    ctx.fillText("Tap/Click to Start Again", 180, 900);
-    startBtn.style.display = "block";
-    return;
-  }
-
-  /* Win condition */
-  if (score >= 5) {
-    win = true;
-    ctx.drawImage(girl, 800, 1600, 180, 220);
-    ctx.fillStyle = "black";
-    ctx.font = "80px Arial";
-    ctx.fillText("PROPOSE SUCCESS ❤️", 200, 800);
-    startBtn.style.display = "block";
-    return;
-  }
-
-  /* Score */
-  ctx.fillStyle = "black";
-  ctx.font = "50px Arial";
-  ctx.fillText("Score: " + score, 50, 100);
-
-  requestAnimationFrame(update);
+  requestAnimationFrame(loop);
 }
 
-/* ============== START AGAIN BUTTON ============== */
-startBtn.addEventListener("click", init);
+restartBtn.onclick = resetGame;
 
-/* ============== INITIAL START ============== */
-init();
+// Start game
+loop();
 </script>
+
 </body>
 </html>
-
