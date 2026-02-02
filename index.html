@@ -6,35 +6,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-  body {
-    margin: 0;
-    background: black;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-  }
+body {
+  margin: 0;
+  background: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
 
-  canvas {
-    width: 100vw;
-    height: 100vh;
-    max-width: 1080px;
-    max-height: 1920px;
-    touch-action: none;
-  }
+canvas {
+  width: 100vw;
+  height: 100vh;
+  max-width: 1080px;
+  max-height: 1920px;
+  touch-action: none;
+}
 
-  #restartBtn {
-    position: absolute;
-    display: none;
-    padding: 20px 40px;
-    font-size: 24px;
-    background: red;
-    color: white;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-  }
+#restartBtn {
+  position: absolute;
+  display: none;
+  padding: 20px 40px;
+  font-size: 24px;
+  background: red;
+  color: white;
+  border: none;
+  border-radius: 10px;
+}
 </style>
 </head>
 
@@ -52,40 +50,31 @@ let gameOver = false;
 
 // Images
 const bg = new Image();
-bg.src = "https://postimg.cc/nC2gWTV0";
+bg.src = "background.png";
 
 const obstacleImg = new Image();
-obstacleImg.src = "https://postimg.cc/mPrJWMh3";
+obstacleImg.src = "obstacle.png";
 
 // Player
 const player = {
   x: 150,
-  y: 1400,
+  y: 1450,
   w: 120,
   h: 160,
   vy: 0,
   gravity: 2,
-  jump: -28,
+  jump: -30,
   onGround: true
 };
 
 // Obstacle
 let obstacle = {
   x: 1080,
-  y: 1450,
-  w: 120,
-  h: 180,
+  y: 1500,
+  w: 140,
+  h: 220,
   speed: 10
 };
-
-function resetGame() {
-  gameOver = false;
-  player.y = 1400;
-  player.vy = 0;
-  obstacle.x = 1080;
-  restartBtn.style.display = "none";
-  loop();
-}
 
 function jump() {
   if (player.onGround && !gameOver) {
@@ -94,16 +83,24 @@ function jump() {
   }
 }
 
-// Controls (PC + Mobile)
+// Controls
 document.addEventListener("keydown", jump);
 document.addEventListener("click", jump);
 document.addEventListener("touchstart", jump);
 
-// Game Loop
-function loop() {
+function resetGame() {
+  gameOver = false;
+  player.y = 1450;
+  player.vy = 0;
+  obstacle.x = 1080;
+  restartBtn.style.display = "none";
+  gameLoop();
+}
+
+function gameLoop() {
   if (gameOver) return;
 
-  ctx.clearRect(0,0,1080,1920);
+  ctx.clearRect(0, 0, 1080, 1920);
 
   // Background
   ctx.drawImage(bg, 0, 0, 1080, 1920);
@@ -112,13 +109,13 @@ function loop() {
   player.vy += player.gravity;
   player.y += player.vy;
 
-  if (player.y >= 1400) {
-    player.y = 1400;
+  if (player.y >= 1450) {
+    player.y = 1450;
     player.vy = 0;
     player.onGround = true;
   }
 
-  // Draw player (simple rectangle)
+  // Player draw (temporary box)
   ctx.fillStyle = "blue";
   ctx.fillRect(player.x, player.y, player.w, player.h);
 
@@ -141,13 +138,13 @@ function loop() {
     restartBtn.style.display = "block";
   }
 
-  requestAnimationFrame(loop);
+  requestAnimationFrame(gameLoop);
 }
 
 restartBtn.onclick = resetGame;
 
-// Start game
-loop();
+// Start
+gameLoop();
 </script>
 
 </body>
